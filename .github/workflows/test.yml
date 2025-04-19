@@ -4,7 +4,7 @@ on: [push, pull_request]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout repository
@@ -16,10 +16,7 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm install
+        run: npm.cmd install
 
       - name: Run Jest tests
         run: npm test
-        
-      - name: Grant execution permissions to Jest
-        run: chmod +x ./node_modules/.bin/jest
