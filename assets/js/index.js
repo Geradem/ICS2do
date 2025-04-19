@@ -1,7 +1,13 @@
-const contadorCaracteres = (elemento, idContenedor)=>{
+export const contadorCaracteres = (elemento, idContenedor) => {
    let contenedorElement = document.getElementById(idContenedor);
+   if (!contenedorElement) {
+       console.warn(`No se encontró un elemento con el ID: ${idContenedor}`);
+       return;
+   }
    let tamanioTexto = elemento.value.length;
    console.log('tamanioTexto :>>', tamanioTexto);
-   let html = `<span>${tamanioTexto} Caracteres </span>`;
-   contenedorElement.innerHTML = html;
-}
+   contenedorElement.innerHTML = `<span>${tamanioTexto} Caracteres </span>`;
+};
+
+// Hacer que la función sea accesible globalmente
+window.contadorCaracteres = contadorCaracteres;
