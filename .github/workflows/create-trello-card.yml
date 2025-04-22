@@ -1,20 +1,37 @@
-name: GitHub Commit To Trello Comment
+name: Crear Tarjeta en Trello
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - main  # O la rama que quieres monitorear
 
 jobs:
-  build:
-    runs-on: windows-latest
+  create_card:
+    runs-on: windows-latest  # ✅ Cambiamos a Windows
 
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-      - uses: dalezak/github-commit-to-trello-card@main
-        with:
-          trello-api-key: ${{ secrets.TRELLO_API_KEY }}
-          trello-auth-token: ${{ secrets.TRELLO_TOKEN }}
-          trello-board-id: ${{ secrets.TRELLO_BOARD_ID }}
-          trello-card-action: "Attachment"
-          trello-list-name-commit: "Doing"
-          trello-list-name-pr-open: "Reviewing"
-          trello-list-name-pr-closed: "Testing"
+      - name: Crear Tarjeta en Trello usando PowerShell
+        shell: powershell
+        run: |
+          $apiKey = "${{ secrets.TRELLO_API_KEY }}"
+          $token = "${{ secrets.TRELLO_TOKEN }}"
+          $listId = "${{ secrets.TRELLO_LIST_ID }}"
+          $cardName = "🚀 Nueva tarea en Trello - ${{ github.event.head_commit.message }}"
+          $cardDesc = "Commit por ${{ github.actor }} en ${{ github.repository }}. Revisar cambios en Trello."
+
+          $body = @{
+            "key" = $apiKey
+            "token" = $token
+            "idList" = $listId
+            "name" = $cardName
+            "desc" = $cardDesc
+          } | ConvertTo-Json -Compress  # ✅ Convierte el cuerpo a JSON correctamente
+
+          Invoke-RestMethod -Uri "https://api.trello.com/1/cards" `
+          -Method Post `
+          -Headers @{ "Content-Type" = "application/json" } `
+          -Body $body
+
