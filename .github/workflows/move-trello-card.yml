@@ -1,0 +1,39 @@
+name: Mover Tarjeta en Trello al Merge
+
+on:
+  pull_request:
+    types:
+      - closed  # ✅ Se activa cuando un PR es cerrado (mergeado)
+
+jobs:
+  move_card:
+    runs-on: windows-latest  # ✅ Compatible con GitHub Actions en Windows
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Mover Tarjeta en Trello usando PowerShell
+        shell: powershell
+        run: |
+          $apiKey = "${{ secrets.TRELLO_API_KEY }}"
+          $token = "${{ secrets.TRELLO_TOKEN }}"
+          $newListId = "${{ secrets.TRELLO_NEW_LIST_ID }}"  # ✅ La nueva lista donde mover la tarjeta
+          $branchName = "${{ github.event.pull_request.head.ref }}"  # ✅ Extrae el nombre de la rama mergeada
+
+          Write-Output "Buscando tarjeta con nombre: $branchName"
+
+          # Obtener la tarjeta con el nombre de la rama
+          $searchUri = "https://api.trello.com/1/search?query=$branchName&key=$apiKey&token=$token"
+          $card = Invoke-RestMethod -Uri $searchUri
+
+          if ($card.cards.Count -gt 0) {
+            $cardId = $card.cards[0].id
+            Write-Output "Tarjeta encontrada: $cardId. Moviéndola..."
+
+            # Mover la tarjeta a la nueva lista
+            $moveUri = "https://api.trello.com/1/cards/$cardId?idList=$newListId&key=$apiKey&token=$token"
+            Invoke-RestMethod -Uri $moveUri -Method Put
+          } else {
+            Write-Output "No se encontró tarjeta para la rama $branchName"
+          }
