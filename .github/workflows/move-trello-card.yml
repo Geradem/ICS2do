@@ -38,13 +38,15 @@ jobs:
           $card = Invoke-RestMethod -Uri $searchUri
           
           $cardId = $card.cards[0].id  # ✅ Asumimos que la tarjeta siempre existe
-          Write-Output "Tarjeta encontrada con ID: $cardId. Moviéndola a la lista 'Doing'..."
+          Write-Output "Moviendo la tarjeta $cardId a la lista Doing con ID: $doingListId"
 
-          # ✅ Mover la tarjeta a la lista "Doing"
           $moveUri = "https://api.trello.com/1/cards/$cardId?key=$apiKey&token=$token"
-          $body = @{ idList = $doingListId } | ConvertTo-Json -Compress
+          $body = @{
+            idList = "$doingListId"
+          } | ConvertTo-Json -Compress
 
           Invoke-RestMethod -Uri $moveUri `
           -Method Put `
           -Headers @{ "Content-Type" = "application/json" } `
           -Body $body
+
