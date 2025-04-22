@@ -1,0 +1,15 @@
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  notify:
+    runs-on: windows-latest
+    steps:
+      - name: Enviar notificación a Slack
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_MESSAGE: "🔔 ¡Nuevo commit en GitHub! 🚀\nRepositorio: ${{ github.repository }}\nAutor: ${{ github.actor }}\nMensaje: ${{ github.event.head_commit.message }}"
+          SLACK_USERNAME: "GitHub Bot"
