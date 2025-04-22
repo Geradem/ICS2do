@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
        - name: Enviar notificación a Slack
-         uses: rtCamp/action-slack-notify@v2
+         uses: slackapi/slack-github-action@v1.23.0
          env:
            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
            SLACK_MESSAGE: "¡Nuevo commit en GitHub! \nRepositorio: ${{ github.repository }}\nAutor: ${{ github.actor }}\nMensaje: ${{ github.event.head_commit.message }}"
