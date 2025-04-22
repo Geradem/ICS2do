@@ -1,4 +1,4 @@
-name: Mover Tarjeta en Trello al Merge
+nname: Mover Tarjeta en Trello al Merge
 
 on:
   pull_request:
@@ -18,29 +18,23 @@ jobs:
         run: |
           $apiKey = "${{ secrets.TRELLO_API_KEY }}"
           $token = "${{ secrets.TRELLO_TOKEN }}"
-          $newListId = "${{ secrets.TRELLO_DOING_LIST_ID }}"  # ✅ La nueva lista destino
-          $branchName = "${{ github.event.pull_request.head.ref }}"  # ✅ Extrae el nombre de la rama mergeada
+          $newListId = "${{ secrets.TRELLO_DOING_LIST_ID }}"
+          $branchName = "${{ github.event.pull_request.head.ref }}"
 
           Write-Output "Buscando tarjeta con nombre: $branchName"
 
-          # Buscar la tarjeta por nombre
+          # Obtener la tarjeta con el nombre de la rama
           $searchUri = "https://api.trello.com/1/search?query=$branchName&key=$apiKey&token=$token"
           $card = Invoke-RestMethod -Uri $searchUri
+          
+          $cardId = $card.cards[0].id  # ✅ Asume que la tarjeta siempre existe
+          Write-Output "Tarjeta encontrada con ID: $cardId. Moviéndola a la lista con ID: $newListId"
 
-          if ($card.cards.Count -gt 0) {
-            $cardId = $card.cards[0].id
-            Write-Output "Tarjeta encontrada con ID: $cardId. Moviéndola a la lista con ID: $newListId"
+          # ✅ Mover la tarjeta
+          $moveUri = "https://api.trello.com/1/cards/$cardId?key=$apiKey&token=$token"
+          $body = @{ idList = $newListId } | ConvertTo-Json -Compress
 
-            # ✅ Nueva solicitud con `idList` en el cuerpo (`Body`)
-            $moveUri = "https://api.trello.com/1/cards/$cardId?key=$apiKey&token=$token"
-            $body = @{
-              idList = $newListId
-            } | ConvertTo-Json -Compress
-
-            Invoke-RestMethod -Uri $moveUri `
-            -Method Put `
-            -Headers @{ "Content-Type" = "application/json" } `
-            -Body $body
-          } else {
-            Write-Output "No se encontró tarjeta para la rama $branchName"
-          }
+          Invoke-RestMethod -Uri $moveUri `
+          -Method Put `
+          -Headers @{ "Content-Type" = "application/json" } `
+          -Body $body
