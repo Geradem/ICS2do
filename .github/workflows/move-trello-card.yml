@@ -18,7 +18,7 @@ jobs:
         run: |
           $apiKey = "${{ secrets.TRELLO_API_KEY }}"
           $token = "${{ secrets.TRELLO_TOKEN }}"
-          $newListId = "${{ secrets.TRELLO_NEW_LIST_ID }}"  # ✅ La nueva lista donde mover la tarjeta
+          $newListId = "${{ secrets.TRELLO_DOINGS_LIST_ID }}"  # ✅ La nueva lista donde mover la tarjeta
           $branchName = "${{ github.event.pull_request.head.ref }}"  # ✅ Extrae el nombre de la rama mergeada
 
           Write-Output "Buscando tarjeta con nombre: $branchName"
