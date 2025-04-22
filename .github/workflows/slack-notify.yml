@@ -13,4 +13,4 @@ jobs:
            SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
            SLACK_MESSAGE: "¡Nuevo commit en GitHub! \nRepositorio: ${{ github.repository }}\nAutor: ${{ github.actor }}\nMensaje: ${{ github.event.head_commit.message }}"
            SLACK_USERNAME: "GitHub Bot"
-           SLACK_CHANNEL: "#github-notifications"  # 🔥 Agrega el canal si es necesario
+           SLACK_CHANNEL: "#actualizaciones-repo"  # 🔥 Agrega el canal si es necesario
