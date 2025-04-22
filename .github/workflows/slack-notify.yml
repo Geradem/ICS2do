@@ -16,5 +16,5 @@ jobs:
         uses: slackapi/slack-github-action@v1.23.0
         env:
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN }}
-          SLACK_CHANNEL: "#github-notifications"
+          SLACK_CHANNEL: "C08P79BJ5KK"
           SLACK_MESSAGE: "🚀 Nuevo commit en GitHub por ${{ github.actor }}: ${{ github.event.head_commit.message }}"
