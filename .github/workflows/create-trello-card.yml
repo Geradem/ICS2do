@@ -22,13 +22,15 @@ jobs:
           $cardName = "🚀 Nueva tarea en Trello - ${{ github.event.head_commit.message }}"
           $cardDesc = "Commit por ${{ github.actor }} en ${{ github.repository }}. Revisar cambios en Trello."
 
-          Invoke-RestMethod -Uri "https://api.trello.com/1/cards" `
-          -Method Post `
-          -Headers @{ "Content-Type" = "application/json" } `
-          -Body @{
+          $body = @{
             "key" = $apiKey
             "token" = $token
             "idList" = $listId
             "name" = $cardName
             "desc" = $cardDesc
-          }
+          } | ConvertTo-Json -Compress  # ✅ Convierte el cuerpo a JSON correctamente
+
+          Invoke-RestMethod -Uri "https://api.trello.com/1/cards" `
+          -Method Post `
+          -Headers @{ "Content-Type" = "application/json" } `
+          -Body $body
