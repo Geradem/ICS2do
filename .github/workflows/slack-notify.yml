@@ -1,16 +1,20 @@
+name: Notificación en Slack
+
 on:
   push:
     branches:
-      - main
+      - main  # O la rama que quieres monitorear
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
-       - name: Enviar notificación a Slack
-         uses: slackapi/slack-github-action@v1.23.0
-         env:
-           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
-           SLACK_MESSAGE: "¡Nuevo commit en GitHub! \nRepositorio: ${{ github.repository }}\nAutor: ${{ github.actor }}\nMensaje: ${{ github.event.head_commit.message }}"
-           SLACK_USERNAME: "GitHub Bot"
-           SLACK_CHANNEL: "#actualizaciones-repo"  # 🔥 Agrega el canal si es necesario
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Enviar mensaje a Slack con Token
+        uses: slackapi/slack-github-action@v1.23.0
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          SLACK_CHANNEL: "#github-notifications"
+          SLACK_MESSAGE: "🚀 Nuevo commit en GitHub por ${{ github.actor }}: ${{ github.event.head_commit.message }}"
