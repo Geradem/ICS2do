@@ -15,7 +15,7 @@ jobs:
       - name: Enviar mensaje a Slack con Token
         uses: slackapi/slack-github-action@v1.23.0
         with:
-          SLACK_CHANNEL: "C08P79BJ5KK"
-          SLACK_MESSAGE: "🚀 Nuevo commit en GitHub por ${{ github.actor }}: ${{ github.event.head_commit.message }}"
+          channel-id: "C08P79BJ5KK"
+          slack-message: "🚀 Nuevo commit en GitHub por ${{ github.actor }}: ${{ github.event.head_commit.message }}"
         env: 
           SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN }}
