@@ -1,4 +1,4 @@
-nname: Mover Tarjeta en Trello al Merge
+name: Mover Tarjeta a "Doing" en Trello al Merge
 
 on:
   pull_request:
@@ -13,26 +13,36 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
 
-      - name: Mover Tarjeta en Trello usando PowerShell
+      - name: Mover Tarjeta en Trello a la lista "Doing"
         shell: powershell
         run: |
           $apiKey = "${{ secrets.TRELLO_API_KEY }}"
           $token = "${{ secrets.TRELLO_TOKEN }}"
-          $newListId = "${{ secrets.TRELLO_DOING_LIST_ID }}"
+          $boardId = "${{ secrets.TRELLO_BOARD_ID }}"  # ✅ ID del pizarrón Trello
           $branchName = "${{ github.event.pull_request.head.ref }}"
 
-          Write-Output "Buscando tarjeta con nombre: $branchName"
+          Write-Output "Buscando el ID de la lista 'Doing' en el tablero..."
 
-          # Obtener la tarjeta con el nombre de la rama
+          # ✅ Obtener todas las listas dentro del pizarrón en Trello
+          $listsUri = "https://api.trello.com/1/boards/$boardId/lists?key=$apiKey&token=$token"
+          $lists = Invoke-RestMethod -Uri $listsUri
+
+          # ✅ Buscar la lista que tenga el nombre "Doing"
+          $doingList = $lists | Where-Object { $_.name -eq "Doing" }
+          $doingListId = $doingList.id
+
+          Write-Output "Lista 'Doing' encontrada con ID: $doingListId"
+
+          # ✅ Obtener la tarjeta con el nombre de la rama
           $searchUri = "https://api.trello.com/1/search?query=$branchName&key=$apiKey&token=$token"
           $card = Invoke-RestMethod -Uri $searchUri
           
-          $cardId = $card.cards[0].id  # ✅ Asume que la tarjeta siempre existe
-          Write-Output "Tarjeta encontrada con ID: $cardId. Moviéndola a la lista con ID: $newListId"
+          $cardId = $card.cards[0].id  # ✅ Asumimos que la tarjeta siempre existe
+          Write-Output "Tarjeta encontrada con ID: $cardId. Moviéndola a la lista 'Doing'..."
 
-          # ✅ Mover la tarjeta
+          # ✅ Mover la tarjeta a la lista "Doing"
           $moveUri = "https://api.trello.com/1/cards/$cardId?key=$apiKey&token=$token"
-          $body = @{ idList = $newListId } | ConvertTo-Json -Compress
+          $body = @{ idList = $doingListId } | ConvertTo-Json -Compress
 
           Invoke-RestMethod -Uri $moveUri `
           -Method Put `
