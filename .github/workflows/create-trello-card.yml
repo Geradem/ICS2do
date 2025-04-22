@@ -7,7 +7,7 @@ on:
 
 jobs:
   create_card:
-    runs-on: windows-latest  # ✅ Cambiamos a Windows
+    runs-on: windows-latest  # ✅ Compatible con GitHub Actions en Windows
 
     steps:
       - name: Checkout repository
@@ -22,17 +22,14 @@ jobs:
           $cardName = "🚀 Nueva tarea en Trello - ${{ github.event.head_commit.message }}"
           $cardDesc = "Commit por ${{ github.actor }} en ${{ github.repository }}. Revisar cambios en Trello."
 
+          $uri = "https://api.trello.com/1/cards?key=$apiKey&token=$token"
           $body = @{
-            key = $apiKey
-            token = $token
             idList = $listId
             name = $cardName
             desc = $cardDesc
           } | ConvertTo-Json -Compress
 
-          Invoke-RestMethod -Uri "https://api.trello.com/1/cards?key=$apiKey&token=$token" `
+          Invoke-RestMethod -Uri $uri `
           -Method Post `
           -Headers @{ "Content-Type" = "application/json" } `
           -Body $body
-
-
