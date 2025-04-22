@@ -1,0 +1,34 @@
+name: Crear Tarjeta en Trello al Crear una Rama
+
+on:
+  create:  # ✅ Se ejecutará cuando se cree una nueva rama
+
+jobs:
+  create_card:
+    runs-on: windows-latest  # ✅ Compatible con GitHub Actions en Windows
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Crear Tarjeta en Trello usando PowerShell
+        shell: powershell
+        run: |
+          $apiKey = "${{ secrets.TRELLO_API_KEY }}"
+          $token = "${{ secrets.TRELLO_TOKEN }}"
+          $listId = "${{ secrets.TRELLO_LIST_ID }}"
+          $branchName = "${{ github.ref }}".Split("/")[-1]  # ✅ Extrae el nombre de la rama creada
+          $cardName = "🆕 Nueva Rama: $branchName"
+          $cardDesc = "Rama creada en ${{ github.repository }} por ${{ github.actor }}"
+
+          $uri = "https://api.trello.com/1/cards?key=$apiKey&token=$token"
+          $body = @{
+            idList = $listId
+            name = $cardName
+            desc = $cardDesc
+          } | ConvertTo-Json -Compress
+
+          Invoke-RestMethod -Uri $uri `
+          -Method Post `
+          -Headers @{ "Content-Type" = "application/json" } `
+          -Body $body
