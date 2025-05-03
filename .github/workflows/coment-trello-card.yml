@@ -1,4 +1,4 @@
-name: Crear Tarjeta en Trello
+name: Comentar Tarjeta en Trello
 
 on:
   push:
@@ -31,4 +31,4 @@ jobs:
           BRANCH_NAME: ${{ github.ref_name }}  # Captura el nombre de la rama
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}  # Captura el mensaje del commit
         run: |
-          python scripts/create_trello_card.py
+          python scripts/coment_trello_card.py
