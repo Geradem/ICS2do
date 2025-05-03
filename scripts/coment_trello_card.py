@@ -17,7 +17,34 @@ def get_card_id_by_name(api_key, token, list_id, card_name):
         print(f"Error al obtener tarjetas: {response.status_code} - {response.text}")
     return None
 
-def create_card(api_key, token, list_id, card_name, card_desc):
+def get_unused_label_color(api_key, token, board_id):
+    """
+    Obtiene un color no utilizado en el tablero.
+    """
+    url = f"https://api.trello.com/1/boards/{board_id}/labels"
+    query = {
+        "key": api_key,
+        "token": token
+    }
+    response = requests.get(url, params=query)
+    if response.status_code == 200:
+        # Obtener los colores ya usados en las etiquetas del tablero
+        used_colors = {label["color"] for label in response.json() if label["color"]}
+        # Lista de todos los colores disponibles en Trello
+        all_colors = {
+            "green", "yellow", "orange", "red", "purple", "blue", "sky", "lime", "pink", "black"
+        }
+        # Determinar los colores no usados
+        unused_colors = all_colors - used_colors
+        return unused_colors.pop() if unused_colors else None
+    else:
+        print(f"Error al obtener etiquetas del tablero: {response.status_code} - {response.text}")
+    return None
+
+def create_card(api_key, token, list_id, card_name, card_desc, label_color=None, board_id=None):
+    """
+    Crea una tarjeta en Trello y asigna una etiqueta con un color único si se proporciona.
+    """
     url = "https://api.trello.com/1/cards"
     query = {
         "key": api_key,
@@ -26,12 +53,38 @@ def create_card(api_key, token, list_id, card_name, card_desc):
         "name": card_name,
         "desc": card_desc
     }
+
+    if label_color and board_id:
+        # Crear una etiqueta con el color único y asignarla a la tarjeta
+        label_id = create_label(api_key, token, board_id, label_color)
+        if label_id:
+            query["idLabels"] = label_id
+
     response = requests.post(url, params=query)
     if response.status_code == 200:
-        print(f"Tarjeta '{card_name}' creada exitosamente.")
+        print(f"Tarjeta '{card_name}' creada exitosamente con color '{label_color}'.")
         return response.json()["id"]
     else:
         print(f"Error al crear tarjeta: {response.status_code} - {response.text}")
+    return None
+
+def create_label(api_key, token, board_id, color):
+    """
+    Crea una etiqueta en el tablero con el color especificado.
+    """
+    url = f"https://api.trello.com/1/labels"
+    query = {
+        "key": api_key,
+        "token": token,
+        "name": f"Etiqueta {color}",
+        "color": color,
+        "idBoard": board_id
+    }
+    response = requests.post(url, params=query)
+    if response.status_code == 200:
+        return response.json()["id"]
+    else:
+        print(f"Error al crear etiqueta: {response.status_code} - {response.text}")
     return None
 
 def add_comment_to_card(api_key, token, card_id, comment):
@@ -51,6 +104,7 @@ def main():
     api_key = os.getenv("TRELLO_API_KEY")
     token = os.getenv("TRELLO_TOKEN")
     list_id = os.getenv("TRELLO_LIST_ID")
+    board_id = os.getenv("TRELLO_BOARD_ID")  # Necesitamos el ID del tablero
     branch_name = os.getenv("BRANCH_NAME")
     commit_message = os.getenv("COMMIT_MESSAGE")
 
@@ -61,9 +115,10 @@ def main():
     # Buscar tarjeta por nombre de la rama
     card_id = get_card_id_by_name(api_key, token, list_id, branch_name)
     if not card_id:
-        # Crear tarjeta si no existe
+        # Obtener un color único para la nueva tarjeta
+        label_color = get_unused_label_color(api_key, token, board_id)
         card_desc = f"Tarjeta creada automáticamente para la rama '{branch_name}'."
-        card_id = create_card(api_key, token, list_id, branch_name, card_desc)
+        card_id = create_card(api_key, token, list_id, branch_name, card_desc, label_color, board_id)
 
     if card_id:
         # Agregar comentario con el mensaje del commit
