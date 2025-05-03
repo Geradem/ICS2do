@@ -1,0 +1,35 @@
+name: Crear Tarjeta en Trello
+
+on:
+  push:
+    branches:
+      - main  # O la rama que quieres monitorear
+
+jobs:
+  create_card:
+    runs-on: windows-latest  # ✅ Compatible con GitHub Actions en Windows
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Crear Tarjeta en Trello usando PowerShell
+        shell: powershell
+        run: |
+          $apiKey = "${{ secrets.TRELLO_API_KEY }}"
+          $token = "${{ secrets.TRELLO_TOKEN }}"
+          $listId = "${{ secrets.TRELLO_LIST_ID }}"
+          $cardName = "🚀 Nueva tarea en Trello - ${{ github.event.head_commit.message }}"
+          $cardDesc = "Commit por ${{ github.actor }} en ${{ github.repository }}. Revisar cambios en Trello."
+
+          $uri = "https://api.trello.com/1/cards?key=$apiKey&token=$token"
+          $body = @{
+            idList = $listId
+            name = $cardName
+            desc = $cardDesc
+          } | ConvertTo-Json -Compress
+
+          Invoke-RestMethod -Uri $uri `
+          -Method Post `
+          -Headers @{ "Content-Type" = "application/json" } `
+          -Body $body
