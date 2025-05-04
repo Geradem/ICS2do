@@ -2,6 +2,9 @@ import os
 import requests
 
 def get_card_id_by_name(api_key, token, list_id, card_name):
+    """
+    Busca una tarjeta en Trello por su nombre.
+    """
     url = f"https://api.trello.com/1/lists/{list_id}/cards"
     query = {
         "key": api_key,
@@ -17,55 +20,24 @@ def get_card_id_by_name(api_key, token, list_id, card_name):
         print(f"Error al obtener tarjetas: {response.status_code} - {response.text}")
     return None
 
-def get_unused_label_color(api_key, token, board_id):
+def get_cover_color_from_branch(branch_name):
     """
-    Obtiene un color no utilizado en el tablero.
+    Determina el color de la portada basado en las tres primeras letras del nombre de la rama.
     """
-    url = f"https://api.trello.com/1/boards/{board_id}/labels"
-    query = {
-        "key": api_key,
-        "token": token
+    prefix = branch_name[:3].lower()  # Obtiene las tres primeras letras en minúsculas
+    color_mapping = {
+        "fea": "pink",
+        "dev": "yellow",
+        "rls": "green",
+        "fix": "orange",
+        "mtr": "sky"
     }
-    response = requests.get(url, params=query)
-    if response.status_code == 200:
-        labels = response.json()
-        used_colors = {label["color"] for label in labels if label["color"]}
-        all_colors = {
-            "green", "yellow", "orange", "red", "purple", "blue", "sky", "lime", "pink", "black"
-        }
-        # Determinar los colores no usados
-        unused_colors = all_colors - used_colors
-        return unused_colors.pop() if unused_colors else None
-    else:
-        print(f"Error al obtener etiquetas del tablero: {response.status_code} - {response.text}")
-        return None
+    # Devuelve el color correspondiente o 'purple' si no coincide con ningún prefijo
+    return color_mapping.get(prefix, "purple")
 
-def get_unused_cover_color(api_key, token, list_id):
+def create_card(api_key, token, list_id, card_name, card_desc, branch_name):
     """
-    Obtiene un color de portada no utilizado en las tarjetas de la lista, excluyendo el color rojo.
-    """
-    url = f"https://api.trello.com/1/lists/{list_id}/cards"
-    query = {
-        "key": api_key,
-        "token": token
-    }
-    response = requests.get(url, params=query)
-    if response.status_code == 200:
-        cards = response.json()
-        used_colors = {card.get("cover", {}).get("color") for card in cards if card.get("cover", {}).get("color")}
-        all_colors = {
-            "green", "yellow", "orange", "purple", "blue", "sky", "lime", "pink", "black"  # Excluir "red"
-        }
-        # Determinar los colores no usados
-        unused_colors = all_colors - used_colors
-        return unused_colors.pop() if unused_colors else None
-    else:
-        print(f"Error al obtener tarjetas de la lista: {response.status_code} - {response.text}")
-        return None
-
-def create_card(api_key, token, list_id, card_name, card_desc, cover_color=None):
-    """
-    Crea una tarjeta en Trello y asigna un color de portada único si se proporciona.
+    Crea una tarjeta en Trello y asigna un color de portada basado en el nombre de la rama.
     """
     url = "https://api.trello.com/1/cards"
     query = {
@@ -81,9 +53,9 @@ def create_card(api_key, token, list_id, card_name, card_desc, cover_color=None)
         card_id = response.json()["id"]
         print(f"Tarjeta '{card_name}' creada exitosamente.")
 
-        # Asignar color de portada si se proporciona
-        if cover_color:
-            set_card_cover(api_key, token, card_id, cover_color)
+        # Determinar el color de la portada basado en el nombre de la rama
+        cover_color = get_cover_color_from_branch(branch_name)
+        set_card_cover(api_key, token, card_id, cover_color)
 
         return card_id
     else:
@@ -111,59 +83,10 @@ def set_card_cover(api_key, token, card_id, color):
     else:
         print(f"Error al configurar la portada: {response.status_code} - {response.text}")
 
-def create_label(api_key, token, board_id, color):
-    """
-    Busca una etiqueta existente con el color especificado. Si no existe, crea una nueva.
-    """
-    if not board_id:
-        print("Error: El ID del tablero (board_id) no es válido.")
-        return None
-
-    # Verificar si ya existe una etiqueta con el color especificado
-    url = f"https://api.trello.com/1/boards/{board_id}/labels"
-    query = {
-        "key": api_key,
-        "token": token
-    }
-    response = requests.get(url, params=query)
-    if response.status_code == 200:
-        labels = response.json()
-        for label in labels:
-            if label["color"] == color:
-                print(f"Etiqueta con color '{color}' ya existe. Reutilizando etiqueta.")
-                return label["id"]
-
-    # Si no existe, crear una nueva etiqueta
-    print(f"Creando nueva etiqueta con color '{color}'.")
-    url = f"https://api.trello.com/1/labels"
-    query = {
-        "key": api_key,
-        "token": token,
-        "name": f"Etiqueta {color}",
-        "color": color,
-        "idBoard": board_id
-    }
-    response = requests.post(url, params=query)
-    if response.status_code == 200:
-        return response.json()["id"]
-    else:
-        print(f"Error al crear etiqueta: {response.status_code} - {response.text}")
-        return None
-
-def add_comment_to_card(api_key, token, card_id, comment):
-    url = f"https://api.trello.com/1/cards/{card_id}/actions/comments"
-    query = {
-        "key": api_key,
-        "token": token,
-        "text": comment
-    }
-    response = requests.post(url, params=query)
-    if response.status_code == 200:
-        print("Comentario agregado exitosamente.")
-    else:
-        print(f"Error al agregar comentario: {response.status_code} - {response.text}")
-
 def main():
+    """
+    Punto de entrada principal para crear una tarjeta en Trello basada en el nombre de la rama.
+    """
     api_key = os.getenv("TRELLO_API_KEY")
     token = os.getenv("TRELLO_TOKEN")
     list_id = os.getenv("TRELLO_LIST_ID")
@@ -176,10 +99,9 @@ def main():
     # Buscar tarjeta por nombre de la rama
     card_id = get_card_id_by_name(api_key, token, list_id, branch_name)
     if not card_id:
-        # Obtener un color único para la portada de la nueva tarjeta
-        cover_color = get_unused_cover_color(api_key, token, list_id)
+        # Crear la tarjeta con el color basado en el nombre de la rama
         card_desc = f"Tarjeta creada automáticamente para la rama '{branch_name}'."
-        create_card(api_key, token, list_id, branch_name, card_desc, cover_color)
+        create_card(api_key, token, list_id, branch_name, card_desc, branch_name)
 
 if __name__ == "__main__":
     main()
