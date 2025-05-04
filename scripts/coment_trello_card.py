@@ -90,6 +90,26 @@ def create_card(api_key, token, list_id, card_name, card_desc, cover_color=None)
         print(f"Error al crear tarjeta: {response.status_code} - {response.text}")
         return None
 
+def set_card_cover(api_key, token, card_id, color):
+    """
+    Asigna un color de portada a una tarjeta.
+    """
+    url = f"https://api.trello.com/1/cards/{card_id}"
+    query = {
+        "key": api_key,
+        "token": token
+    }
+    body = {
+        "cover": {
+            "color": color
+        }
+    }
+    response = requests.put(url, params=query, json=body)
+    if response.status_code == 200:
+        print(f"Portada de la tarjeta configurada con color '{color}'.")
+    else:
+        print(f"Error al configurar la portada: {response.status_code} - {response.text}")
+
 def create_label(api_key, token, board_id, color):
     """
     Busca una etiqueta existente con el color especificado. Si no existe, crea una nueva.
