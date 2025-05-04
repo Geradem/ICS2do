@@ -35,4 +35,4 @@ jobs:
           TRELLO_LIST_ID: ${{ secrets.TRELLO_LIST_ID }}
           BRANCH_NAME: ${{ github.ref_name }}  # Captura el nombre de la rama
         run: |
-          python scripts/create_trello_card.py
+          python create_trello_cards.py
