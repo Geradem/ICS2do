@@ -21,11 +21,6 @@ def get_unused_label_color(api_key, token, board_id):
     """
     Obtiene un color no utilizado en el tablero.
     """
-    if not board_id:
-        print("Error: El ID del tablero (board_id) no es válido.")
-        return None
-
-    print(f"Usando board_id: {board_id}")  # Depuración
     url = f"https://api.trello.com/1/boards/{board_id}/labels"
     query = {
         "key": api_key,
@@ -34,11 +29,7 @@ def get_unused_label_color(api_key, token, board_id):
     response = requests.get(url, params=query)
     if response.status_code == 200:
         labels = response.json()
-        if not labels:
-            print("No hay etiquetas en el tablero.")
-            return None
         used_colors = {label["color"] for label in labels if label["color"]}
-        # Lista de todos los colores disponibles en Trello
         all_colors = {
             "green", "yellow", "orange", "red", "purple", "blue", "sky", "lime", "pink", "black"
         }
@@ -47,7 +38,7 @@ def get_unused_label_color(api_key, token, board_id):
         return unused_colors.pop() if unused_colors else None
     else:
         print(f"Error al obtener etiquetas del tablero: {response.status_code} - {response.text}")
-    return None
+        return None
 
 def create_card(api_key, token, list_id, card_name, card_desc, label_color=None, board_id=None):
     """
@@ -74,7 +65,7 @@ def create_card(api_key, token, list_id, card_name, card_desc, label_color=None,
         return response.json()["id"]
     else:
         print(f"Error al crear tarjeta: {response.status_code} - {response.text}")
-    return None
+        return None
 
 def create_label(api_key, token, board_id, color):
     """
@@ -113,7 +104,7 @@ def create_label(api_key, token, board_id, color):
         return response.json()["id"]
     else:
         print(f"Error al crear etiqueta: {response.status_code} - {response.text}")
-    return None
+        return None
 
 def add_comment_to_card(api_key, token, card_id, comment):
     url = f"https://api.trello.com/1/cards/{card_id}/actions/comments"
