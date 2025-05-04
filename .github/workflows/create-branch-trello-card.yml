@@ -1,0 +1,30 @@
+name: Crear Tarjeta en Trello al Crear Rama
+
+on:
+  create:  # Ejecutar el flujo al crear una rama
+    branches:
+      - '*'  # Monitorea todas las ramas
+
+jobs:
+  create_card:
+    runs-on: windows-latest
+
+    steps:
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Crear Tarjeta en Trello
+        env:
+          TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
+          TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
+          TRELLO_LIST_ID: ${{ secrets.TRELLO_LIST_ID }}
+          BRANCH_NAME: ${{ github.ref_name }}  # Captura el nombre de la rama
+        run: |
+          python scripts/create_trello_card.py
