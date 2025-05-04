@@ -42,7 +42,7 @@ def get_unused_label_color(api_key, token, board_id):
 
 def get_unused_cover_color(api_key, token, list_id):
     """
-    Obtiene un color de portada no utilizado en las tarjetas de la lista.
+    Obtiene un color de portada no utilizado en las tarjetas de la lista, excluyendo el color rojo.
     """
     url = f"https://api.trello.com/1/lists/{list_id}/cards"
     query = {
@@ -54,7 +54,7 @@ def get_unused_cover_color(api_key, token, list_id):
         cards = response.json()
         used_colors = {card.get("cover", {}).get("color") for card in cards if card.get("cover", {}).get("color")}
         all_colors = {
-            "green", "yellow", "orange", "red", "purple", "blue", "sky", "lime", "pink", "black"
+            "green", "yellow", "orange", "purple", "blue", "sky", "lime", "pink", "black"  # Excluir "red"
         }
         # Determinar los colores no usados
         unused_colors = all_colors - used_colors
@@ -92,7 +92,7 @@ def create_card(api_key, token, list_id, card_name, card_desc, cover_color=None)
 
 def set_card_cover(api_key, token, card_id, color):
     """
-    Asigna un color de portada a una tarjeta.
+    Asigna un color de portada a una tarjeta con tamaño completo.
     """
     url = f"https://api.trello.com/1/cards/{card_id}"
     query = {
@@ -101,12 +101,13 @@ def set_card_cover(api_key, token, card_id, color):
     }
     body = {
         "cover": {
-            "color": color
+            "color": color,
+            "size": "full"  # Configurar la portada como tamaño completo
         }
     }
     response = requests.put(url, params=query, json=body)
     if response.status_code == 200:
-        print(f"Portada de la tarjeta configurada con color '{color}'.")
+        print(f"Portada de la tarjeta configurada con color '{color}' y tamaño completo.")
     else:
         print(f"Error al configurar la portada: {response.status_code} - {response.text}")
 
