@@ -72,6 +72,10 @@ def create_label(api_key, token, board_id, color):
     """
     Crea una etiqueta en el tablero con el color especificado.
     """
+    if not board_id:
+        print("Error: El ID del tablero (board_id) no es válido.")
+        return None
+
     url = f"https://api.trello.com/1/labels"
     query = {
         "key": api_key,
