@@ -78,12 +78,28 @@ def create_card(api_key, token, list_id, card_name, card_desc, label_color=None,
 
 def create_label(api_key, token, board_id, color):
     """
-    Crea una etiqueta en el tablero con el color especificado.
+    Busca una etiqueta existente con el color especificado. Si no existe, crea una nueva.
     """
     if not board_id:
         print("Error: El ID del tablero (board_id) no es válido.")
         return None
 
+    # Verificar si ya existe una etiqueta con el color especificado
+    url = f"https://api.trello.com/1/boards/{board_id}/labels"
+    query = {
+        "key": api_key,
+        "token": token
+    }
+    response = requests.get(url, params=query)
+    if response.status_code == 200:
+        labels = response.json()
+        for label in labels:
+            if label["color"] == color:
+                print(f"Etiqueta con color '{color}' ya existe. Reutilizando etiqueta.")
+                return label["id"]
+
+    # Si no existe, crear una nueva etiqueta
+    print(f"Creando nueva etiqueta con color '{color}'.")
     url = f"https://api.trello.com/1/labels"
     query = {
         "key": api_key,
