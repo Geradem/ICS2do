@@ -4,10 +4,13 @@ on:
   push:
     branches:
       - '*'  # Monitorea todas las ramas
+  create:
+    branches:
+      - '*'  # Monitorea la creación de ramas
 
 jobs:
   create_card:
-    if: ${{ github.event.created }}  # Solo ejecuta si es un nuevo branch
+    if: ${{ github.event_name == 'create' || github.event.created }}  # Ejecuta si es un nuevo branch
     runs-on: windows-latest
 
     steps:
@@ -32,4 +35,4 @@ jobs:
           TRELLO_LIST_ID: ${{ secrets.TRELLO_LIST_ID }}
           BRANCH_NAME: ${{ github.ref_name }}  # Captura el nombre de la rama
         run: |
-          python scripts/create_trello_cards.py
+          python scripts/create_trello_card.py
