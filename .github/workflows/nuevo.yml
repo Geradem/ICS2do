@@ -10,6 +10,9 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v3  # Clona el repositorio en el entorno de ejecución
+
       - name: Configurar Python
         uses: actions/setup-python@v4
         with:
