@@ -30,10 +30,17 @@ def send_message_to_slack(token, channel_id, text):
         "text": text
     }
     response = requests.post(url, headers=headers, json=body)
-    if response.status_code == 200 and response.json().get("ok"):
+    response_data = response.json()
+    if response.status_code == 200 and response_data.get("ok"):
         print("Mensaje enviado exitosamente a Slack.")
     else:
-        print(f"Error al enviar mensaje a Slack: {response.status_code} - {response.text}")
+        print(f"Error al enviar mensaje a Slack: {response_data.get('error')}")
+        if response_data.get("error") == "not_in_channel":
+            print(f"El bot no está en el canal con ID '{channel_id}'. Asegúrate de invitarlo.")
+        elif response_data.get("error") == "channel_not_found":
+            print(f"El canal con ID '{channel_id}' no existe. Verifica el ID del canal.")
+        elif response_data.get("error") == "invalid_auth":
+            print("El token de autenticación es inválido. Verifica tu SLACK_TOKEN.")
 
 def main():
     """
