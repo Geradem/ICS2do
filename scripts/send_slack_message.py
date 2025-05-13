@@ -2,24 +2,17 @@ import os
 import requests
 
 def get_channel_id_from_branch(branch_name):
-    """
-    Determina el canal de Slack basado en las tres primeras letras del nombre de la rama.
-    """
-    prefix = branch_name[:3].lower()  # Obtiene las tres primeras letras en minúsculas
+    prefix = branch_name[:3].lower()
     channel_mapping = {
-        "fea": os.getenv("FEATURE_CHANNEL_ID"),  # Canal para 'feature'
-        "dev": os.getenv("DEVELOP_CHANNEL_ID"),  # Canal para 'develop'
-        "rls": os.getenv("RELEASE_CHANNEL_ID"),  # Canal para 'release'
-        "fix": os.getenv("HOTFIX_CHANNEL_ID"),   # Canal para 'hotfix'
-        "mtr": os.getenv("MASTER_CHANNEL_ID")    # Canal para 'master'
+        "fea": os.getenv("FEATURE_CHANNEL_ID"),
+        "dev": os.getenv("DEVELOP_CHANNEL_ID"),
+        "rls": os.getenv("RELEASE_CHANNEL_ID"),
+        "fix": os.getenv("HOTFIX_CHANNEL_ID"),
+        "mtr": os.getenv("MASTER_CHANNEL_ID")
     }
-    # Devuelve el canal correspondiente o el canal 'otros' si no coincide con ningún prefijo
     return channel_mapping.get(prefix, os.getenv("OTHER_CHANNEL_ID"))
 
 def send_message_to_slack(token, channel_id, text):
-    """
-    Envía un mensaje a un canal de Slack.
-    """
     url = "https://slack.com/api/chat.postMessage"
     headers = {
         "Authorization": f"Bearer {token}",
@@ -43,25 +36,21 @@ def send_message_to_slack(token, channel_id, text):
             print("El token de autenticación es inválido. Verifica tu SLACK_TOKEN.")
 
 def main():
-    """
-    Punto de entrada principal para enviar un mensaje a Slack basado en el nombre de la rama.
-    """
     slack_token = os.getenv("SLACK_TOKEN")
     branch_name = os.getenv("BRANCH_NAME")
-    commit_message = os.getenv("COMMIT_MESSAGE")
 
-    if not branch_name or not commit_message:
-        print("No se proporcionaron BRANCH_NAME o COMMIT_MESSAGE.")
+    if not branch_name:
+        print("No se proporcionó BRANCH_NAME.")
         return
 
-    # Determinar el canal basado en las tres primeras letras del nombre de la rama
     channel_id = get_channel_id_from_branch(branch_name)
     if not channel_id:
         print(f"No se encontró un canal para el prefijo de la rama '{branch_name[:3]}'.")
         return
 
-    # Enviar el mensaje a Slack
-    message = f"Nuevo commit en la rama '{branch_name}': {commit_message}"
+    # Elimina las 4 primeras letras y posibles guiones bajos o medios
+    project_name = branch_name[4:].lstrip("_-")
+    message = f"Se establecio el proyecto {project_name}, para verificar su avance recise el hilo de este mensaje"
     send_message_to_slack(slack_token, channel_id, message)
 
 if __name__ == "__main__":
