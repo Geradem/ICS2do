@@ -1,9 +1,9 @@
-name: Enviar Mensaje a Slack al Hacer Commit
+name: Enviar Mensaje a Slack al Crear Rama
 
 on:
-  push:  # Se ejecuta en cada commit
+  create:
     branches:
-      - '*'  # Monitorea todas las ramas
+      - '*'  # Solo se ejecuta al crear cualquier rama
 
 jobs:
   send_slack_message:
@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout del repositorio
-        uses: actions/checkout@v3  # Clona el repositorio en el entorno de ejecución
+        uses: actions/checkout@v3
 
       - name: Configurar Python
         uses: actions/setup-python@v4
@@ -23,7 +23,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests
 
-      - name: Enviar Mensaje a Slack
+      - name: Enviar Mensaje a Slack Al Crear Rama
         env:
           SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
           FEATURE_CHANNEL_ID: ${{ secrets.FEATURE_CHANNEL_ID }}
@@ -32,7 +32,6 @@ jobs:
           HOTFIX_CHANNEL_ID: ${{ secrets.HOTFIX_CHANNEL_ID }}
           MASTER_CHANNEL_ID: ${{ secrets.MASTER_CHANNEL_ID }}
           OTHER_CHANNEL_ID: ${{ secrets.OTHER_CHANNEL_ID }}
-          BRANCH_NAME: ${{ github.ref_name }}  # Captura el nombre de la rama
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}  # Captura el mensaje del commit
+          BRANCH_NAME: ${{ github.ref_name }}
         run: |
           python scripts/send_slack_message.py

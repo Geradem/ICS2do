@@ -13,24 +13,33 @@ def get_channel_id_from_branch(branch_name):
     return channel_mapping.get(prefix, os.getenv("OTHER_CHANNEL_ID"))
 
 def find_thread_ts(token, channel_id, branch_name):
-    """
-    Busca el mensaje principal en el canal que contiene el nombre del proyecto y devuelve su ts.
-    """
     url = "https://slack.com/api/conversations.history"
     headers = {
         "Authorization": f"Bearer {token}"
     }
     params = {
         "channel": channel_id,
-        "limit": 200  # Puedes aumentar el límite si es necesario
+        "limit": 200
     }
     response = requests.get(url, headers=headers, params=params)
     if response.status_code == 200 and response.json().get("ok"):
         messages = response.json().get("messages", [])
         project_name = branch_name[4:].lstrip("_-")
-        for msg in messages:
-            if project_name in msg.get("text", ""):
+        print(f"Buscando en canal: {channel_id}")
+        print(f"Nombre del proyecto a buscar: '{project_name}'")
+        print(f"Cantidad de mensajes recuperados: {len(messages)}")
+        found = False
+        for i, msg in enumerate(messages):
+            text = msg.get("text", "")
+            print(f"[{i+1}] Texto del mensaje: '{text}'")
+            if project_name in text:
+                print(f"¡Coincidencia encontrada en el mensaje {i+1}!")
+                found = True
                 return msg["ts"]
+        if not found:
+            print("No se encontró coincidencia en los mensajes recuperados.")
+    else:
+        print(f"Error al obtener mensajes del canal: {response.status_code} - {response.text}")
     return None
 
 def send_commit_to_thread(token, channel_id, thread_ts, commit_message):
@@ -61,13 +70,14 @@ def main():
         return
 
     channel_id = get_channel_id_from_branch(branch_name)
+    print(f"Canal seleccionado para la rama '{branch_name}': {channel_id}")
     if not channel_id:
         print(f"No se encontró un canal para el prefijo de la rama '{branch_name[:3]}'.")
         return
 
     thread_ts = find_thread_ts(slack_token, channel_id, branch_name)
     if not thread_ts:
-        print(f"No se encontró el mensaje principal para la rama '{branch_name}' en el canal.")
+        print(f"No se encontró el mensaje principal para la rama '{branch_name}' en el canal '{channel_id}'.")
         return
 
     send_commit_to_thread(slack_token, channel_id, thread_ts, commit_message)
