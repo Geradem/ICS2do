@@ -14,7 +14,7 @@ def get_channel_id_from_branch(branch_name):
 
 def find_thread_ts(token, channel_id, branch_name):
     """
-    Busca el mensaje principal en el canal que contiene el nombre de la rama y devuelve su ts.
+    Busca el mensaje principal en el canal que contiene el nombre del proyecto y devuelve su ts.
     """
     url = "https://slack.com/api/conversations.history"
     headers = {
@@ -22,13 +22,14 @@ def find_thread_ts(token, channel_id, branch_name):
     }
     params = {
         "channel": channel_id,
-        "limit": 100  # Ajusta si tienes muchos mensajes
+        "limit": 200  # Puedes aumentar el límite si es necesario
     }
     response = requests.get(url, headers=headers, params=params)
     if response.status_code == 200 and response.json().get("ok"):
         messages = response.json().get("messages", [])
+        project_name = branch_name[4:].lstrip("_-")
         for msg in messages:
-            if branch_name in msg.get("text", ""):
+            if project_name in msg.get("text", ""):
                 return msg["ts"]
     return None
 
