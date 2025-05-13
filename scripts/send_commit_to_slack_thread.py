@@ -12,6 +12,19 @@ def get_channel_id_from_branch(branch_name):
     }
     return channel_mapping.get(prefix, os.getenv("OTHER_CHANNEL_ID"))
 
+def get_channel_name(token, channel_id):
+    url = "https://slack.com/api/conversations.info"
+    headers = {
+        "Authorization": f"Bearer {token}"
+    }
+    params = {
+        "channel": channel_id
+    }
+    response = requests.get(url, headers=headers, params=params)
+    if response.status_code == 200 and response.json().get("ok"):
+        return response.json()["channel"]["name"]
+    return f"(ID: {channel_id})"
+
 def find_thread_ts(token, channel_id, branch_name):
     url = "https://slack.com/api/conversations.history"
     headers = {
@@ -40,6 +53,8 @@ def find_thread_ts(token, channel_id, branch_name):
             print("No se encontró coincidencia en los mensajes recuperados.")
     else:
         print(f"Error al obtener mensajes del canal: {response.status_code} - {response.text}")
+        if response.status_code == 200 and "missing_scope" in response.text:
+            print("⚠️  El token necesita el permiso 'channels:history' o 'groups:history'.")
     return None
 
 def send_commit_to_thread(token, channel_id, thread_ts, commit_message):
@@ -70,14 +85,15 @@ def main():
         return
 
     channel_id = get_channel_id_from_branch(branch_name)
-    print(f"Canal seleccionado para la rama '{branch_name}': {channel_id}")
+    channel_name = get_channel_name(slack_token, channel_id)
+    print(f"Canal seleccionado para la rama '{branch_name}': {channel_name}")
     if not channel_id:
         print(f"No se encontró un canal para el prefijo de la rama '{branch_name[:3]}'.")
         return
 
     thread_ts = find_thread_ts(slack_token, channel_id, branch_name)
     if not thread_ts:
-        print(f"No se encontró el mensaje principal para la rama '{branch_name}' en el canal '{channel_id}'.")
+        print(f"No se encontró el mensaje principal para la rama '{branch_name}' en el canal '{channel_name}'.")
         return
 
     send_commit_to_thread(slack_token, channel_id, thread_ts, commit_message)
