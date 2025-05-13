@@ -38,23 +38,18 @@ def find_thread_ts(token, channel_id, branch_name):
     if response.status_code == 200 and response.json().get("ok"):
         messages = response.json().get("messages", [])
         project_name = branch_name[4:].lstrip("_-")
-        print(f"Buscando en canal: {channel_id}")
+        print(f"Buscando en canal: {get_channel_name(token, channel_id)}")
         print(f"Nombre del proyecto a buscar: '{project_name}'")
         print(f"Cantidad de mensajes recuperados: {len(messages)}")
-        found = False
         for i, msg in enumerate(messages):
             text = msg.get("text", "")
             print(f"[{i+1}] Texto del mensaje: '{text}'")
             if project_name in text:
                 print(f"¡Coincidencia encontrada en el mensaje {i+1}!")
-                found = True
                 return msg["ts"]
-        if not found:
-            print("No se encontró coincidencia en los mensajes recuperados.")
+        print("No se encontró coincidencia en los mensajes recuperados.")
     else:
         print(f"Error al obtener mensajes del canal: {response.status_code} - {response.text}")
-        if response.status_code == 200 and "missing_scope" in response.text:
-            print("⚠️  El token necesita el permiso 'channels:history' o 'groups:history'.")
     return None
 
 def send_commit_to_thread(token, channel_id, thread_ts, commit_message):
