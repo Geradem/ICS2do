@@ -1,16 +1,12 @@
-name: Crear Tarjeta en Trello al Crear Rama
+name: Mover Tarjeta en Trello y Agregar Comentario al Hacer Commit
 
 on:
-  push:
+  push:  # Se ejecuta en cada commit
     branches:
       - '*'  # Monitorea todas las ramas
-  create:
-    branches:
-      - '*'  # Monitorea la creación de ramas
 
 jobs:
-  create_card:
-    if: ${{ github.event_name == 'create' || github.event.created }}  # Ejecuta si es un nuevo branch
+  move_and_comment_card:
     runs-on: windows-latest
 
     steps:
@@ -27,11 +23,14 @@ jobs:
           python -m pip install --upgrade pip
           pip install requests
 
-      - name: Crear Tarjeta en Trello
+      - name: Mover Tarjeta en Trello y Agregar Comentario
         env:
           TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
           TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
-          TRELLO_LIST_ID: ${{ secrets.TRELLO_LIST_ID }}
+          TRELLO_BOARD_ID: ${{ secrets.TRELLO_BOARD_ID }}
+          TODO_LIST_ID: ${{ secrets.TRELLO_TODO_LIST_ID }}
+          DOING_LIST_ID: ${{ secrets.TRELLO_DOING_LIST_ID }}
           BRANCH_NAME: ${{ github.ref_name }}  # Captura el nombre de la rama
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}  # Captura el mensaje del commit
         run: |
-          python scripts/create_trello_cards.py
+          python scripts/move_and_comment_trello_card.py
