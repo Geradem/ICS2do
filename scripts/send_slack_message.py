@@ -48,7 +48,6 @@ def main():
         print(f"No se encontró un canal para el prefijo de la rama '{branch_name[:3]}'.")
         return
 
-    # Elimina las 4 primeras letras y posibles guiones bajos o medios
     project_name = branch_name[4:].lstrip("_-")
     message = f"Se establecio el proyecto {project_name}, para verificar su avance recise el hilo de este mensaje"
     send_message_to_slack(slack_token, channel_id, message)
