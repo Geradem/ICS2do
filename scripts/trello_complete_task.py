@@ -22,9 +22,14 @@ def get_card_by_prefix(api_key, token, board_id, historia_num):
     params = {"key": api_key, "token": token}
     response = requests.get(url, params=params)
     if response.status_code == 200:
+        print(f"Buscando tarjeta con prefijo: '{historia_num}|'")
         for card in response.json():
+            print(f"Tarjeta encontrada: '{card['name']}'")
             if card["name"].startswith(f"{historia_num}|"):
+                print("¡Tarjeta encontrada!")
                 return card["id"]
+    else:
+        print(f"Error al obtener tarjetas: {response.status_code} - {response.text}")
     return None
 
 def get_checklists(api_key, token, card_id):
@@ -62,6 +67,8 @@ def main():
     commit_message = os.getenv("COMMIT_MESSAGE")
 
     historia_num, tarea_num = parse_commit_message(commit_message)
+    print(f"Historia extraída del commit: '{historia_num}'")
+
     if not historia_num or not tarea_num:
         print("El commit no contiene el formato esperado para historia y tarea.")
         return
