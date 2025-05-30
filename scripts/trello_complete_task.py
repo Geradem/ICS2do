@@ -40,7 +40,7 @@ def get_checklists(api_key, token, card_id):
         return response.json()
     return []
 
-def complete_checklist_item(api_key, token, checklist_id, tarea_num):
+def complete_checklist_item(api_key, token, card_id, checklist_id, tarea_num):
     """
     Marca como completada la tarea cuyo nombre empieza con el número de tarea.
     """
@@ -52,7 +52,7 @@ def complete_checklist_item(api_key, token, checklist_id, tarea_num):
             if item["name"].startswith(f"{tarea_num}|"):
                 # Marcar como completada
                 checkitem_id = item["id"]
-                url_check = f"https://api.trello.com/1/cards/{item['idCard']}/checkItem/{checkitem_id}"
+                url_check = f"https://api.trello.com/1/cards/{card_id}/checkItem/{checkitem_id}"
                 params_check = {"key": api_key, "token": token, "state": "complete"}
                 resp = requests.put(url_check, params=params_check)
                 if resp.status_code == 200:
@@ -87,7 +87,7 @@ def main():
 
     checklists = get_checklists(api_key, token, card_id)
     for checklist in checklists:
-        if complete_checklist_item(api_key, token, checklist["id"], tarea_num):
+        if complete_checklist_item(api_key, token, card_id, checklist["id"], tarea_num):
             return
 
     print(f"No se encontró la tarea {tarea_num} en la historia {historia_num}.")
