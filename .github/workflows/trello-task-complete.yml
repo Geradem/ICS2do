@@ -1,0 +1,33 @@
+name: Marcar tarea de Trello como terminada al hacer commit
+
+on:
+  push:
+    branches:
+      - '*'  # Se ejecuta en cada commit
+
+jobs:
+  complete_trello_task:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout del repositorio
+        uses: actions/checkout@v3
+
+      - name: Configurar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Instalar dependencias
+        run: |
+          python -m pip install --upgrade pip
+          pip install requests
+
+      - name: Marcar tarea de Trello como terminada
+        env:
+          TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
+          TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
+          TRELLO_BOARD_ID: ${{ secrets.TRELLO_BOARD_ID }}
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+        run: |
+          python scripts/trello_complete_task.py
