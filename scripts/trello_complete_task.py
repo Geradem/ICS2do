@@ -73,6 +73,13 @@ def main():
         print("El commit no contiene el formato esperado para historia y tarea.")
         return
 
+    print(f"Usando board_id: {board_id}")
+    print(f"Usando api_key: {api_key[:4]}...")  # Solo los primeros caracteres por seguridad
+    print(f"Usando token: {token[:4]}...")      # Solo los primeros caracteres por seguridad
+
+    print(f"Consultando: https://api.trello.com/1/boards/{board_id}/cards")
+    print(f"Con params: key={api_key[:4]}..., token={token[:4]}...")
+
     card_id = get_card_by_prefix(api_key, token, board_id, historia_num)
     if not card_id:
         print(f"No se encontró la tarjeta para la historia {historia_num}.")
