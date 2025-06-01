@@ -27,10 +27,22 @@ jobs:
           if ! npm run test; then
             echo "TEST_FAILED" > test_failed.txt
           fi
+          ls -l # Debug: muestra archivos en el workspace
+
+      - name: Debug test_failed.txt
+        shell: bash
+        run: |
+          if [ -f test_failed.txt ]; then
+            echo "test_failed.txt existe"
+            cat test_failed.txt
+          else
+            echo "test_failed.txt NO existe"
+          fi
 
       - name: Prepare deploy folder
         shell: bash
         run: |
+          rm -rf deploy
           mkdir -p deploy
           if [ -f test_failed.txt ]; then
             cp maintenance/index.html deploy/index.html
@@ -39,6 +51,8 @@ jobs:
             mkdir -p deploy/assets
             cp -r assets/* deploy/assets/
           fi
+          echo "Contenido de deploy:"
+          ls -l deploy
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
