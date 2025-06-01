@@ -24,11 +24,8 @@ jobs:
       - name: Run tests and create flag if failed
         shell: pwsh
         run: |
-          try {
-            npm run test
-          } catch {
-            "TEST_FAILED" | Out-File -Encoding utf8 test_failed.txt
-          }
+          npm run test
+          if ($LASTEXITCODE -ne 0) { "TEST_FAILED" | Out-File -Encoding utf8 test_failed.txt }
 
       - name: Prepare deploy folder
         shell: pwsh
