@@ -7,21 +7,16 @@ on:
 
 jobs:
   complete_trello_task:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout del repositorio
         uses: actions/checkout@v3
 
-      - name: Configurar Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
-
       - name: Instalar dependencias
         run: |
-          python -m pip install --upgrade pip
-          pip install requests
+          python3 -m pip install --upgrade pip
+          python3 -m pip install requests
 
       - name: Marcar tarea de Trello como terminada
         env:
@@ -33,4 +28,4 @@ jobs:
           TRELLO_LIST_DONE_ID: ${{ secrets.TRELLO_LIST_DONE_ID }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
-          python scripts/trello_complete_task.py
+          python3 scripts/trello_complete_task.py
