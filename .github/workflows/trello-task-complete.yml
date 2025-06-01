@@ -28,6 +28,9 @@ jobs:
           TRELLO_API_KEY: ${{ secrets.TRELLO_API_KEY }}
           TRELLO_TOKEN: ${{ secrets.TRELLO_TOKEN }}
           TRELLO_BOARD_ID: ${{ secrets.TRELLO_BOARD_ID }}
+          TRELLO_LIST_TODO_ID: ${{ secrets.TRELLO_LIST_TODO_ID }}
+          TRELLO_LIST_DOING_ID: ${{ secrets.TRELLO_LIST_DOING_ID }}
+          TRELLO_LIST_DONE_ID: ${{ secrets.TRELLO_LIST_DONE_ID }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
         run: |
           python scripts/trello_complete_task.py
