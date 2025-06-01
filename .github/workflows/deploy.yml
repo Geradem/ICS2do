@@ -74,3 +74,15 @@ jobs:
           else
             echo "No se requiere notificación a Slack."
           fi
+
+      - name: Notificar por WhatsApp si el sitio está fuera de servicio
+        run: |
+          if [ -f test_failed.txt ]; then
+            python3 -m pip install requests
+            CALLMEBOT_PHONE="${{ secrets.CALLMEBOT_PHONE }}" \
+            CALLMEBOT_APIKEY="${{ secrets.CALLMEBOT_APIKEY }}" \
+            CALLMEBOT_MENSAJE="El sitio está FUERA DE SERVICIO: los tests fallaron y se desplegó la página de mantenimiento." \
+            python3 scripts/send_whatsapp_callmebot.py
+          else
+            echo "No se requiere notificación por WhatsApp."
+          fi
