@@ -62,3 +62,16 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./deploy
+
+      - name: Notificar a Slack si el sitio está fuera de servicio
+        run: |
+          if [ -f test_failed.txt ]; then
+            python3 -m pip install --upgrade pip
+            python3 -m pip install requests
+            SLACK_TOKEN="${{ secrets.SLACK_TOKEN }}" \
+            BRANCH_NAME="main" \
+            OTHER_CHANNEL_ID="fuera_de_servicio" \
+            python3 scripts/send_slack_message.py
+          else
+            echo "No se requiere notificación a Slack."
+          fi
