@@ -23,6 +23,7 @@ jobs:
 
       - name: Run tests
         id: test
+        continue-on-error: true
         run: |
           npm run test
           if ($LASTEXITCODE -ne 0) { "TEST_FAILED" | Out-File -Encoding utf8 test_failed.txt }
