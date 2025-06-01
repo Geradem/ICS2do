@@ -99,13 +99,23 @@ def main():
         print(f"No se encontró la tarjeta para la historia {historia_num}.")
         return
 
+    # 1. Marca la tarea como terminada
+    tarea_completada = False
     checklists = get_checklists(api_key, token, card_id)
     for checklist in checklists:
         if complete_checklist_item(api_key, token, card_id, checklist["id"], tarea_num):
+            tarea_completada = True
             break
 
-    # Calcular el progreso y mover la tarjeta si corresponde
+    if not tarea_completada:
+        print(f"No se encontró la tarea {tarea_num} para marcar como terminada.")
+        return
+
+    # 2. Calcula el progreso después de marcar la tarea
     progreso = get_card_progress(api_key, token, card_id)
+
+    # 3. Mueve la tarjeta según el progreso
+    print(f"IDs de listas: To Do={list_todo}, Doing={list_doing}, Done={list_done}")
     if progreso == 0:
         destino = list_todo
         print("La tarjeta debe estar en To Do.")
