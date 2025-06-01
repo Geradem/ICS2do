@@ -21,14 +21,17 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Run tests
-        id: test
-        continue-on-error: true
+      - name: Run tests and create flag if failed
+        shell: pwsh
         run: |
-          npm run test
-          if ($LASTEXITCODE -ne 0) { "TEST_FAILED" | Out-File -Encoding utf8 test_failed.txt }
+          try {
+            npm run test
+          } catch {
+            "TEST_FAILED" | Out-File -Encoding utf8 test_failed.txt
+          }
 
       - name: Prepare deploy folder
+        shell: pwsh
         run: |
           if (!(Test-Path deploy)) { mkdir deploy }
           if (Test-Path test_failed.txt) {
