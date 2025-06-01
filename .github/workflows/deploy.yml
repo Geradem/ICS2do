@@ -21,10 +21,13 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Dar permisos de ejecución a jest
+        run: chmod +x ./node_modules/.bin/jest
+
       - name: Run tests and create flag if failed
         shell: bash
         run: |
-          if ! npm run test; then
+          if ! npx jest; then
             echo "TEST_FAILED" > test_failed.txt
           fi
           ls -l # Debug: muestra archivos en el workspace
