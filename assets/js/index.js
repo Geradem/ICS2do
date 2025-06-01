@@ -4,7 +4,7 @@ export const contadorCaracteres = (elemento, idContenedor) => {
        console.warn(`No se encontró un elemento con el ID: ${idContenedor}`);
        return;
    }
-   let tamanioTexto = elemento.value.length;
+   let tamanioTexto = elemento.value.length +1;
    console.log('tamanioTexto :>>', tamanioTexto);
    contenedorElement.innerHTML = `<span>${tamanioTexto} Caracteres </span>`;
 };
