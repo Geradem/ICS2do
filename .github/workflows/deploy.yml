@@ -1,0 +1,45 @@
+name: Deploy with test check
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run tests
+        id: test
+        run: |
+          npm run test
+          if ($LASTEXITCODE -ne 0) { "TEST_FAILED" | Out-File -Encoding utf8 test_failed.txt }
+
+      - name: Prepare deploy folder
+        run: |
+          if (!(Test-Path deploy)) { mkdir deploy }
+          if (Test-Path test_failed.txt) {
+            Copy-Item maintenance\index.html deploy\index.html
+          } else {
+            Copy-Item index.html deploy\index.html
+            if (!(Test-Path deploy\assets)) { mkdir deploy\assets }
+            Copy-Item -Recurse assets\* deploy\assets\
+          }
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./deploy
