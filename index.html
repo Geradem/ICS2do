@@ -1,22 +1,37 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="UTF-8">
+    <title>Fuera de servicio</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    <style>
+        body { 
+            background: #f8d7da; 
+            color: #721c24; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            height: 100vh; 
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .box {
+            background: #fff;
+            border: 2px solid #f5c6cb;
+            border-radius: 8px;
+            padding: 2rem 3rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 { margin-bottom: 1rem; }
+    </style>
 </head>
 <body>
-    <div class="row justify-content-center mt-5">
-        <div class="col-sm4 shadow p-3">
-            <div>
-                <label for="">Nombre</label>
-                <input type="text" oninput="contadorCaracteres(this, 'contenedor1')" class="form-control">
-                <div id="contenedor1"> </div>
-            </div>
-        </div>
+    <div class="box">
+        <h1>🚧 Fuera de servicio 🚧</h1>
+        <p>El sitio está temporalmente fuera de servicio por mantenimiento o error en los tests.<br>
+        Por favor, vuelve a intentarlo más tarde.</p>
     </div>
-    <script type="module" src="assets/js/index.js"></script>
 </body>
-    
-</html>        
+</html>
