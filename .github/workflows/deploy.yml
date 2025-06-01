@@ -7,7 +7,7 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
@@ -22,25 +22,23 @@ jobs:
         run: npm install
 
       - name: Run tests and create flag if failed
-        shell: pwsh
+        shell: bash
         run: |
-          try {
-            npm run test
-          } catch {
-            "TEST_FAILED" | Out-File -Encoding utf8 test_failed.txt
-          }
+          if ! npm run test; then
+            echo "TEST_FAILED" > test_failed.txt
+          fi
 
       - name: Prepare deploy folder
-        shell: pwsh
+        shell: bash
         run: |
-          if (!(Test-Path deploy)) { mkdir deploy }
-          if (Test-Path test_failed.txt) {
-            Copy-Item maintenance\index.html deploy\index.html
-          } else {
-            Copy-Item index.html deploy\index.html
-            if (!(Test-Path deploy\assets)) { mkdir deploy\assets }
-            Copy-Item -Recurse assets\* deploy\assets\
-          }
+          mkdir -p deploy
+          if [ -f test_failed.txt ]; then
+            cp maintenance/index.html deploy/index.html
+          else
+            cp index.html deploy/index.html
+            mkdir -p deploy/assets
+            cp -r assets/* deploy/assets/
+          fi
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
