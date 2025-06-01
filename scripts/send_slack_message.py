@@ -1,6 +1,17 @@
 import os
 import requests
 
+def get_channel_id_from_branch(branch_name):
+    prefix = branch_name[:3].lower()
+    channel_mapping = {
+        "fea": os.getenv("FEATURE_CHANNEL_ID"),
+        "dev": os.getenv("DEVELOP_CHANNEL_ID"),
+        "rls": os.getenv("RELEASE_CHANNEL_ID"),
+        "fix": os.getenv("HOTFIX_CHANNEL_ID"),
+        "mtr": os.getenv("MASTER_CHANNEL_ID")
+    }
+    return channel_mapping.get(prefix, os.getenv("OTHER_CHANNEL_ID"))
+
 def send_message_to_slack(token, channel_id, text):
     url = "https://slack.com/api/chat.postMessage"
     headers = {
@@ -26,20 +37,20 @@ def send_message_to_slack(token, channel_id, text):
 
 def main():
     slack_token = os.getenv("SLACK_TOKEN")
-    fuera_servicio_channel = os.getenv("SLACK_FUERA_DE_SERVICIO")
-    normal_channel = os.getenv("SLACK_CANAL_NORMAL")
-    despliegue_ok = os.getenv("DEPLOY_OK")
+    branch_name = os.getenv("BRANCH_NAME")
 
-    if despliegue_ok == "1" and normal_channel:
-        message = "✅ El sitio se desplegó exitosamente."
-        send_message_to_slack(slack_token, normal_channel, message)
+    if not branch_name:
+        print("No se proporcionó BRANCH_NAME.")
         return
 
-    if fuera_servicio_channel:
-        message = "El sitio está FUERA DE SERVICIO: los tests fallaron y se desplegó la página de mantenimiento."
-        send_message_to_slack(slack_token, fuera_servicio_channel, message)
-    else:
-        print("No se proporcionó SLACK_FUERA_DE_SERVICIO. No se enviará mensaje de error.")
+    channel_id = get_channel_id_from_branch(branch_name)
+    if not channel_id:
+        print(f"No se encontró un canal para el prefijo de la rama '{branch_name[:3]}'.")
+        return
+
+    project_name = branch_name[4:].lstrip("_-")
+    message = f"Se establecio el proyecto {project_name}, para verificar su avance recise el hilo de este mensaje"
+    send_message_to_slack(slack_token, channel_id, message)
 
 if __name__ == "__main__":
     main()
