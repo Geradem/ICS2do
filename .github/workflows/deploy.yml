@@ -57,6 +57,32 @@ jobs:
           echo "Contenido de deploy:"
           ls -l deploy
 
+      - name: Checkout gh-pages branch (para flag persistente)
+        uses: actions/checkout@v3
+        with:
+          ref: gh-pages
+          path: ghpages_tmp
+        continue-on-error: true
+
+      - name: Detectar si el sitio estaba fuera de servicio antes (flag en gh-pages)
+        id: was_down
+        run: |
+          if [ -f ghpages_tmp/.was_down_flag ]; then
+            echo "was_down=true" >> $GITHUB_ENV
+          else
+            echo "was_down=false" >> $GITHUB_ENV
+          fi
+
+      - name: Actualizar flag de estado en deploy
+        run: |
+          if [ -f test_failed.txt ]; then
+            cp ghpages_tmp/.was_down_flag deploy/.was_down_flag 2>/dev/null || touch deploy/.was_down_flag
+          else
+            if [ -f ghpages_tmp/.was_down_flag ]; then
+              rm -f deploy/.was_down_flag
+            fi
+          fi
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
@@ -85,4 +111,21 @@ jobs:
             python3 scripts/send_whatsapp_callmebot.py
           else
             echo "No se requiere notificación por WhatsApp."
+          fi
+
+      - name: Notificar restauración si corresponde (flag en gh-pages)
+        run: |
+          if [ "$was_down" = "true" ] && [ ! -f test_failed.txt ]; then
+            python3 -m pip install --upgrade pip
+            python3 -m pip install requests
+            SLACK_TOKEN="${{ secrets.SLACK_TOKEN }}" \
+            SLACK_FUERA_DE_SERVICIO="${{ secrets.SLACK_FUERA_DE_SERVICIO }}" \
+            SLACK_MENSAJE_ERROR="✅ El sitio volvió a estar en funcionamiento." \
+            python3 scripts/slack_notify_outage.py
+            CALLMEBOT_PHONE="${{ secrets.CALLMEBOT_PHONE }}" \
+            CALLMEBOT_APIKEY="${{ secrets.CALLMEBOT_APIKEY }}" \
+            CALLMEBOT_MENSAJE="✅ El sitio volvió a estar en funcionamiento." \
+            python3 scripts/send_whatsapp_callmebot.py
+          else
+            echo "No se requiere notificación de restauración."
           fi
