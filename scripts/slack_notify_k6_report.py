@@ -30,13 +30,20 @@ def main():
     checks = metrics.get('checks', {})
 
     # Formatear mensaje
+    # Asegura que el valor de rate sea numérico antes de formatear
+    rate_value = http_req_failed.get('rate', 'N/A')
+    try:
+        rate_percent = f"{float(rate_value)*100:.2f}%"
+    except (ValueError, TypeError):
+        rate_percent = str(rate_value)
+
     mensaje = (
         f'*Reporte de prueba de carga k6*\n'
         f'- Duración: {duration:.1f} segundos\n'
         f'- VUs: {vus}\n'
         f'- Total requests: {metrics.get('http_reqs', {}).get('count', 'N/A')}\n'
         f'- 95% req < {http_req_duration.get('thresholds', {}).get('p(95)', 'N/A')} ms\n'
-        f'- % requests fallidas: {http_req_failed.get('rate', 'N/A')*100:.2f}%\n'
+        f'- % requests fallidas: {rate_percent}\n'
         f'- Checks pasados: {checks.get('passes', 'N/A')} / {checks.get('passes', 0) + checks.get('fails', 0)}\n'
     )
 
