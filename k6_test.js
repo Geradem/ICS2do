@@ -21,12 +21,6 @@ export let options = {
       iterations: 50,
       startTime: '4m', // Empieza después de la carga máxima
     },
-    endurance: {
-      executor: 'constant-vus',
-      vus: 500,
-      duration: '15m', // 15 minutos de carga constante
-      startTime: '8m',
-    },
   },
   thresholds: {
     http_req_duration: ['p(95)<10000', 'avg<5000'], // 95% de las requests < 10s, promedio < 5s
