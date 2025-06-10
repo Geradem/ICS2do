@@ -1,12 +1,17 @@
 name: Pruebas de sistema con k6
 
 on:
+  workflow_run:
+    workflows: ["Deploy with test check"]
+    types:
+      - completed
   workflow_dispatch:
   schedule:
     - cron: '0 3 * * *' # Corre todos los días a las 3am UTC
 
 jobs:
   k6-test:
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name != 'workflow_run' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -34,5 +39,5 @@ jobs:
         run: |
           python3 scripts/slack_notify_k6_report.py k6-summary.json
         env:
-          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_TOKEN }}
           REPORT_CANAL_ID: ${{ secrets.REPORT_CANAL_ID }}

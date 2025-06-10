@@ -11,7 +11,7 @@ export let options = {
 };
 
 export default function () {
-  let res = http.get('https://emilianomtz.github.io/ICS2do/'); // URL real del sitio desplegado
+  let res = http.get('hhttps://geradem.github.io/ICS2do/'); // URL real del sitio desplegado
   check(res, {
     'status is 200': (r) => r.status === 200,
   });
