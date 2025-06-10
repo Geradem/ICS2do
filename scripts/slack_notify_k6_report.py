@@ -31,8 +31,7 @@ def main():
 
     # Formatear mensaje
     mensaje = (
-        f'*Reporte de prueba de carga k6*
-'
+        f'*Reporte de prueba de carga k6*\n'
         f'- Duración: {duration:.1f} segundos\n'
         f'- VUs: {vus}\n'
         f'- Total requests: {metrics.get('http_reqs', {}).get('count', 'N/A')}\n'
