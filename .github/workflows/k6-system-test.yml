@@ -1,0 +1,38 @@
+name: Pruebas de sistema con k6
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 3 * * *' # Corre todos los días a las 3am UTC
+
+jobs:
+  k6-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Instalar k6
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y k6
+
+      - name: Ejecutar prueba de carga k6
+        run: |
+          k6 run k6_test.js --summary-export=k6-summary.json || true
+
+      - name: Analizar resultados y notificar si hay errores
+        run: |
+          python3 scripts/notificar_k6_resultado.py
+        env:
+          SLACK_TOKEN: ${{ secrets.SLACK_TOKEN }}
+          SLACK_FUERA_DE_SERVICIO: ${{ secrets.SLACK_FUERA_DE_SERVICIO }}
+          CALLMEBOT_PHONE: ${{ secrets.CALLMEBOT_PHONE }}
+          CALLMEBOT_APIKEY: ${{ secrets.CALLMEBOT_APIKEY }}
+
+      - name: Enviar reporte de k6 a Slack
+        run: |
+          python3 scripts/slack_notify_k6_report.py k6-summary.json
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+          REPORT_CANAL_ID: ${{ secrets.REPORT_CANAL_ID }}
