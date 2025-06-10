@@ -30,7 +30,7 @@ export let options = {
 };
 
 export default function () {
-  let res = http.get('https://emilianomtz.github.io/ICS2do/');
+  let res = http.get('https://geradem.github.io/ICS2do/');
   check(res, {
     'status is 200': (r) => r.status === 200,
     'body contiene ICS2do': (r) => r.body && r.body.includes('ICS2do'),
