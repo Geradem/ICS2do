@@ -14,8 +14,16 @@ def main():
     with open(K6_SUMMARY) as f:
         data = json.load(f)
 
-    http_req_duration = data["metrics"]["http_req_duration"]["p(95)"]
-    http_req_failed = data["metrics"]["http_req_failed"]["rate"]
+    # Manejo robusto de claves faltantes
+    http_req_duration = data["metrics"]["http_req_duration"].get("p(95)")
+    http_req_failed = data["metrics"]["http_req_failed"].get("rate")
+
+    if http_req_duration is None:
+        print("No se encontró el valor p(95) en http_req_duration.")
+        http_req_duration = 0
+    if http_req_failed is None:
+        print("No se encontró el valor rate en http_req_failed.")
+        http_req_failed = 0
 
     print(f"p95 de respuesta: {http_req_duration} ms")
     print(f"Tasa de fallos: {http_req_failed}")
