@@ -21,30 +21,47 @@ def main():
         print(f'Error leyendo el archivo de resultados de k6: {e}')
         sys.exit(1)
 
-    # Extraer métricas principales
+    # Extraer métricas principales de forma robusta
     metrics = k6_data.get('metrics', {})
-    duration = k6_data.get('state', {}).get('testRunDurationMs', 0) / 1000
-    vus = k6_data.get('options', {}).get('vus', 'N/A')
+    http_reqs = metrics.get('http_reqs', {}).get('count', 'N/A')
     http_req_duration = metrics.get('http_req_duration', {})
+    p95 = http_req_duration.get('p(95)', 'N/A')
+    avg = http_req_duration.get('avg', 'N/A')
+    min_ = http_req_duration.get('min', 'N/A')
+    max_ = http_req_duration.get('max', 'N/A')
     http_req_failed = metrics.get('http_req_failed', {})
-    checks = metrics.get('checks', {})
-
-    # Formatear mensaje
-    # Asegura que el valor de rate sea numérico antes de formatear
     rate_value = http_req_failed.get('rate', 'N/A')
     try:
         rate_percent = f"{float(rate_value)*100:.2f}%"
     except (ValueError, TypeError):
         rate_percent = str(rate_value)
+    checks = metrics.get('checks', {})
+    checks_passed = checks.get('passes', 'N/A')
+    checks_failed = checks.get('fails', 'N/A')
+    total_checks = (checks.get('passes', 0) or 0) + (checks.get('fails', 0) or 0)
 
+    # Información de escenarios
+    escenarios = k6_data.get('options', {}).get('scenarios', {})
+    escenarios_info = []
+    for nombre, esc in escenarios.items():
+        tipo = esc.get('executor', 'N/A')
+        vus = esc.get('vus', esc.get('target', 'N/A'))
+        duracion = esc.get('duration', esc.get('stages', 'N/A'))
+        escenarios_info.append(f"- {nombre}: tipo={tipo}, vus={vus}, duración={duracion}")
+    escenarios_str = '\n'.join(escenarios_info)
+
+    # Formatear mensaje mejorado
     mensaje = (
         f'*Reporte de prueba de carga k6*\n'
-        f'- Duración: {duration:.1f} segundos\n'
-        f'- VUs: {vus}\n'
-        f'- Total requests: {metrics.get('http_reqs', {}).get('count', 'N/A')}\n'
-        f'- 95% req < {http_req_duration.get('thresholds', {}).get('p(95)', 'N/A')} ms\n'
+        f'{escenarios_str}\n'
+        f'- Total de requests: {http_reqs}\n'
+        f'- Latencia promedio: {avg} ms\n'
+        f'- Latencia p95: {p95} ms\n'
+        f'- Latencia mínima: {min_} ms\n'
+        f'- Latencia máxima: {max_} ms\n'
         f'- % requests fallidas: {rate_percent}\n'
-        f'- Checks pasados: {checks.get('passes', 'N/A')} / {checks.get('passes', 0) + checks.get('fails', 0)}\n'
+        f'- Checks pasados: {checks_passed} / {total_checks}\n'
+        f'- Checks fallidos: {checks_failed}\n'
     )
 
     # Enviar mensaje a Slack
