@@ -15,8 +15,15 @@ def main():
         data = json.load(f)
 
     # Manejo robusto de claves faltantes
+    # Si hay varios dominios, ignora el resultado y nunca notifiques outage
     http_req_duration = data["metrics"]["http_req_duration"].get("p(95)")
     http_req_failed = data["metrics"]["http_req_failed"].get("rate")
+
+    # Detectar si hay más de un dominio probado
+    http_req_url = data["metrics"].get("http_req_url", {})
+    if "values" in http_req_url and len(http_req_url["values"]) > 1:
+        print("Se detectaron múltiples dominios en la prueba de k6. No se notificará outage automáticamente.")
+        return
 
     if http_req_duration is None:
         print("No se encontró el valor p(95) en http_req_duration.")
