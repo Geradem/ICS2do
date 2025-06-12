@@ -136,5 +136,5 @@ jobs:
           server: ${{ secrets.INFINITYFREE_FTP_SERVER }}
           username: ${{ secrets.INFINITYFREE_FTP_USER }}
           password: ${{ secrets.INFINITYFREE_FTP_PASS }}
-          local-dir: ./deploy
+          local-dir: ./deploy/
           server-dir: /htdocs/   # Cambia si tu carpeta raíz es diferente
