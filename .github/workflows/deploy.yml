@@ -129,3 +129,12 @@ jobs:
           else
             echo "No se requiere notificación de restauración."
           fi
+
+      - name: Deploy a InfinityFree por FTP
+        uses: SamKirkland/FTP-Deploy-Action@v4
+        with:
+          server: ${{ secrets.INFINITYFREE_FTP_SERVER }}
+          username: ${{ secrets.INFINITYFREE_FTP_USER }}
+          password: ${{ secrets.INFINITYFREE_FTP_PASS }}
+          local-dir: ./deploy
+          server-dir: /htdocs/   # Cambia si tu carpeta raíz es diferente
