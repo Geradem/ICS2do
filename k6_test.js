@@ -1,6 +1,11 @@
 import http from 'k6/http';
 import { check, sleep } from 'k6';
 
+const SITES = [
+  'https://geradem.github.io/ICS2do/',
+  'https://geradem.wuaze.com/'
+];
+
 export let options = {
   scenarios: {
     carga_maxima: {
@@ -30,11 +35,13 @@ export let options = {
 };
 
 export default function () {
-  let res = http.get('https://geradem.github.io/ICS2do/');
-  check(res, {
-    'status is 200': (r) => r.status === 200,
-    'body contiene ICS2do': (r) => r.body && r.body.includes('ICS2do'),
-    'latencia < 10s': (r) => r.timings.duration < 10000,
-  });
-  sleep(1);
+  for (const url of SITES) {
+    let res = http.get(url);
+    check(res, {
+      'status is 200': (r) => r.status === 200,
+      'body contiene ICS2do': (r) => r.body && r.body.includes('ICS2do'),
+      'latencia < 10s': (r) => r.timings.duration < 10000,
+    });
+    sleep(1);
+  }
 }
